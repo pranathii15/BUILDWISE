@@ -32,17 +32,29 @@ body {
 
 .navbar h2 {
     font-weight: 700;
+    margin: 0;
 }
 
+/* Right side menu */
 .navbar ul {
     list-style: none;
     display: flex;
-    gap: 30px;
+    gap: 35px;
+    margin: 0;
+    padding: 0;
 }
 
-.navbar li {
-    cursor: pointer;
+.navbar li a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 18px;
 }
+
+.navbar li a:hover {
+    opacity: 0.8;
+}
+
 
 /* Hero */
 .hero {
@@ -210,6 +222,92 @@ button.calc-btn {
         align-items: center;
     }
 }
+/* Chatbot container */
+#chatbot {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+/* Toggle button */
+#chat-toggle {
+    background: linear-gradient(135deg,#6a6fd1,#7b4fb5);
+    color: white;
+    border: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/* Chat window */
+#chat-window {
+    display: none;
+    width: 300px;
+    height: 400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    position: absolute;
+    bottom: 80px;
+    right: 0;
+    overflow: hidden;
+}
+
+#chat-header {
+    background: linear-gradient(90deg,#6a6fd1,#7b4fb5);
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#chat-messages {
+    height: 270px;
+    overflow-y: auto;
+    padding: 10px;
+    font-size: 14px;
+}
+
+#chat-input {
+    display: flex;
+    padding: 10px;
+    gap: 5px;
+}
+
+#chat-input input {
+    flex: 1;
+    padding: 6px;
+}
+
+/* Speech bubble */
+#chat-bubble {
+    position: absolute;
+    bottom: 90px;
+    right: 10px;
+    background: white;
+    padding: 10px 16px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    font-size: 14px;
+
+    width: 220px;        /* makes it wider */
+    max-width: 260px;
+    white-space: normal; /* allows normal wrapping */
+    line-height: 1.4;
+
+    animation: fadeOut 6s forwards;
+}
+
+
+@keyframes fadeOut {
+    0% {opacity:1;}
+    80% {opacity:1;}
+    100% {opacity:0;}
+}
+
 </style>
 </head>
 
@@ -217,27 +315,31 @@ button.calc-btn {
 
 <!-- Navbar -->
 <div class="navbar">
-    <h2>🏗 BuildAI Pro</h2>
+    <h2>🏗 BUILDWISE</h2>
     <ul>
-        <li>Home</li>
-        <li>Calculator</li>
-        <li>Features</li>
-        <li>Contact</li>
+        <li><a href="#home">Home</a></li>
+        <li><a href="#calculator">Calculator</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#contact">Contact</a></li>
     </ul>
 </div>
 
 <!-- Hero -->
-<section class="hero">
+<section class="hero" id="home">
     <h1>AI-Powered Construction Planning</h1>
     <p>
         Plan your construction projects with precision using advanced AI algorithms.
         Get accurate worker requirements, realistic timelines, and cost analysis in seconds.
     </p>
-    <button>Start Planning Now</button>
+<button onclick="location.href='#calculator'">
+    Start Planning Now
+</button>
+
+
 </section>
 
 <!-- Features -->
-<section class="section">
+<section class="section" id="features">
     <h2>Why Choose BuildAI Pro?</h2>
     <p>Comprehensive features designed for modern construction management</p>
 
@@ -285,7 +387,7 @@ button.calc-btn {
 </section>
 
 <!-- Calculator -->
-<section class="calculator">
+<section class="calculator" id="calculator">
     <div class="calc-container">
 
         <div class="calc-box">
@@ -297,6 +399,7 @@ button.calc-btn {
             <input id="cost" placeholder="Cost per sq yard">
 
             <button class="calc-btn" onclick="calculate()">Calculate Project</button>
+
         </div>
 
         <div class="calc-box">
@@ -310,7 +413,7 @@ button.calc-btn {
 </section>
 
 <!-- Technology -->
-<section class="tech">
+<section class="tech" id="contact">
     <h2 style="text-align:center;margin-bottom:40px;">
         Powered by Advanced Technology
     </h2>
@@ -323,7 +426,97 @@ button.calc-btn {
     </div>
 </section>
 
+<!-- AI Chatbot -->
+<div id="chatbot">
+    <div id="chat-bubble">Hello! Glad to see you. I'm here to help.</div>
+
+    <div id="chat-window">
+        <div id="chat-header">BuildWise AI Assistant</div>
+        <div id="chat-messages"></div>
+
+        <div id="chat-input">
+            <input id="chat-text" placeholder="Ask something..." />
+            <button onclick="sendMessage()">Send</button>
+            <button onclick="startListening()">🎤</button>
+        </div>
+    </div>
+
+    <button id="chat-toggle" onclick="toggleChat()">💬</button>
+</div>
 <script>
+/* ---------------- CHATBOT ---------------- */
+
+function toggleChat() {
+    let win = document.getElementById("chat-window");
+    win.style.display = win.style.display === "block" ? "none" : "block";
+}
+
+function addMessage(sender, text) {
+    let msgBox = document.getElementById("chat-messages");
+    let msg = document.createElement("div");
+    msg.innerHTML = "<b>" + sender + ":</b> " + text;
+    msgBox.appendChild(msg);
+    msgBox.scrollTop = msgBox.scrollHeight;
+}
+
+function speak(text) {
+    let speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "en-US";
+    window.speechSynthesis.speak(speech);
+}
+
+async function sendMessage() {
+    let input = document.getElementById("chat-text");
+    let message = input.value;
+    if (!message) return;
+
+    addMessage("You", message);
+    input.value = "";
+
+    try {
+        let response = await fetch("/chat", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({message: message})
+        });
+
+        let data = await response.json();
+        addMessage("AI", data.reply);
+        speak(data.reply);
+
+    } catch (e) {
+        addMessage("AI", "Connection error.");
+    }
+}
+
+function startListening() {
+    let SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        alert("Speech not supported.");
+        return;
+    }
+
+    let recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+
+    recognition.onresult = function(event) {
+        document.getElementById("chat-text").value =
+            event.results[0][0].transcript;
+        sendMessage();
+    };
+
+    recognition.start();
+}
+
+/* Auto greeting */
+window.onload = function() {
+    let greeting = "Hello! Glad to see you. I'm here to help.";
+    speak(greeting);
+};
+
+
+/* ---------------- CALCULATOR ---------------- */
+
 async function calculate() {
     let area = document.getElementById("area").value;
     let floors = document.getElementById("floors").value;
@@ -335,9 +528,7 @@ async function calculate() {
     try {
         let response = await fetch("/analyze", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
                 area: area,
                 floors: floors,
@@ -348,43 +539,144 @@ async function calculate() {
 
         let data = await response.json();
 
+        // Safe weekly schedule handling
+        let weeklyHTML = "";
+        if (data.weekly_schedule && data.weekly_schedule.length > 0) {
+            weeklyHTML = data.weekly_schedule.map(w =>
+                `Week ${w.week}: ${w.task}
+                 <br><small>Materials: ${w.materials} | Workers: ${w.workers}</small><br><br>`
+            ).join("");
+        } else {
+            weeklyHTML = "Weekly schedule not available.";
+        }
+
         document.getElementById("results").innerHTML = `
-            <b>Workers:</b> ${data.workers}<br>
-            <small>${data.explanations.workers}</small><br><br>
 
-            <b>Worker Breakdown:</b><br>
-            - Masons: ${data.worker_breakdown.masons}<br>
-            - Helpers: ${data.worker_breakdown.helpers}<br>
-            - Steel Workers: ${data.worker_breakdown.steel_workers}<br>
-            - Carpenters: ${data.worker_breakdown.carpenters}<br>
-            - Supervisors: ${data.worker_breakdown.supervisors}<br><br>
+<style>
+details {
+    background: #f5f6fa;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+summary {
+    font-weight: bold;
+    font-size: 16px;
+}
+</style>
 
-            <b>Duration:</b> ${data.duration_days} days<br>
-            <small>${data.explanations.duration}</small><br><br>
+<!-- Workers + Cost -->
+<details open>
+<summary>Workforce & Cost Overview</summary>
+<b>Workers:</b> ${data.workers}<br>
+<small>${data.explanations.workers}</small><br><br>
 
-            <b>Labor Cost:</b> ₹${data.labor_cost}<br>
-            <small>${data.explanations.labor_cost}</small><br><br>
+<b>Worker Breakdown:</b><br>
+- Masons: ${data.worker_breakdown.masons.count}
+  <small>(${data.worker_breakdown.masons.duty})</small><br>
+- Helpers: ${data.worker_breakdown.helpers.count}
+  <small>(${data.worker_breakdown.helpers.duty})</small><br>
+- Steel Workers: ${data.worker_breakdown.steel_workers.count}
+  <small>(${data.worker_breakdown.steel_workers.duty})</small><br>
+- Carpenters: ${data.worker_breakdown.carpenters.count}
+  <small>(${data.worker_breakdown.carpenters.duty})</small><br>
+- Electricians: ${data.worker_breakdown.electricians.count}
+  <small>(${data.worker_breakdown.electricians.duty})</small><br>
+- Plumbers: ${data.worker_breakdown.plumbers.count}
+  <small>(${data.worker_breakdown.plumbers.duty})</small><br>
+- Supervisors: ${data.worker_breakdown.supervisors.count}
+  <small>(${data.worker_breakdown.supervisors.duty})</small><br><br>
 
-            <b>Material Cost:</b> ₹${data.material_cost}<br>
-            <small>${data.explanations.material_cost}</small><br><br>
+<b>Duration:</b> ${data.duration_days} days<br>
+<small>${data.explanations.duration}</small><br><br>
 
-            <b>Materials Required:</b><br>
-            - Cement: ${data.materials.cement_bags} bags<br>
-            - Steel: ${data.materials.steel_kg} kg<br>
-            - Sand: ${data.materials.sand_tons} tons<br>
-            - Bricks: ${data.materials.bricks}<br><br>
+<b>Labor Cost:</b> ₹${data.labor_cost}<br>
+<small>${data.explanations.labor_cost}</small><br><br>
 
-            <h3>Total Cost: ₹${data.total_cost}</h3>
-            <small>${data.explanations.total_cost}</small>
-        `;
+<b>Material Cost:</b> ₹${data.material_cost}<br>
+<small>${data.explanations.material_cost}</small><br><br>
+
+<h3>Total Cost: ₹${data.total_cost}</h3>
+<small>${data.explanations.total_cost}</small>
+</details>
+
+<!-- Floor Plan -->
+<details>
+<summary>Generated Floor Plan</summary>
+<img src="${data.floorplan}" 
+     style="width:100%;max-width:400px;border-radius:8px;margin-top:10px;">
+</details>
+
+<!-- Weekly Schedule -->
+<details>
+<summary>Weekly Construction Schedule</summary>
+${weeklyHTML}
+</details>
+
+<!-- Alternative Plans -->
+<details>
+<summary>Alternative Construction Plans</summary>
+${data.alternative_plans.map(p =>
+    `<b>${p.name}</b><br>
+     Workers: ${p.workers}<br>
+     Duration: ${p.duration} days<br>
+     Total Cost: ₹${p.total_cost}<br><br>`
+).join("")}
+</details>
+
+<!-- Sustainability -->
+<details>
+<summary>Sustainability Options</summary>
+${data.sustainability_options.map(s =>
+    `<b>${s.material}</b><br>
+     Impact: ${s.impact}<br>
+     Cost Change: ${s.cost_change}<br><br>`
+).join("")}
+</details>
+<!-- Material Delivery Planner -->
+<details>
+<summary>Material Delivery Planner</summary>
+${data.material_delivery.map(m =>
+    `<b>Week ${m.week}:</b> ${m.materials}<br>
+     <small>${m.note}</small><br><br>`
+).join("")}
+</details>
+<!-- Project Timeline -->
+<details>
+<summary>Project Timeline</summary>
+
+<div style="margin-top:10px;">
+${data.timeline.map(t => `
+    <div style="margin-bottom:10px;">
+        <b>${t.phase}</b> — ${t.duration} days
+        <div style="
+            height:10px;
+            background:${t.color};
+            width:${t.duration * 2}px;
+            border-radius:5px;
+            margin-top:4px;">
+        </div>
+    </div>
+`).join("")}
+</div>
+
+</details>
+
+
+`;
 
     } catch (err) {
+        console.error(err);
         document.getElementById("results").innerHTML =
             "Error connecting to backend.";
     }
 }
+
 </script>
+
 
 
 </body>
 </html>
+
